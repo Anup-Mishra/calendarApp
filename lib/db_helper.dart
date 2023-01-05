@@ -10,8 +10,8 @@ class DBHelper {
             id TEXT PRIMARY KEY, 
             title TEXT, 
             description TEXT, 
-            from TEXT, 
-            to TEXT
+            startDate TEXT, 
+            endDate TEXT
             )''');
     }));
   }
@@ -23,6 +23,7 @@ class DBHelper {
 
   static Future<List<Map<String, Object?>>> getData(String table) async {
     final sqldb = await database();
+    print(await sqldb.query(table));
     return sqldb.query(table);
   }
 }

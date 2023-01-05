@@ -12,7 +12,6 @@ class CalendarApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final events = Provider.of<EventProvider>(context).events;
     return Scaffold(
       appBar: AppBar(
         title: const Text("Calendar App"),
@@ -27,22 +26,36 @@ class CalendarApp extends StatelessWidget {
         ],
       ),
       body: FutureBuilder(
-        future:
-            Provider.of<EventProvider>(context, listen: false).fetchEvents(),
-        builder: (context, snapshot) =>
-            snapshot.connectionState == ConnectionState.waiting
-                ? const Center(child: CircularProgressIndicator())
-                : SfCalendar(
-                    view: CalendarView.month,
-                    dataSource: EventsDataSource(events),
-                    initialSelectedDate: DateTime.now(),
-                    todayHighlightColor: Colors.amber,
-                    onTap: (calendarTapDetails) {
-                      Navigator.of(context).pushNamed(CalendarDayView.pageName,
-                          arguments: calendarTapDetails.date);
-                    },
-                  ),
-      ),
+          future:
+              Provider.of<EventProvider>(context, listen: false).fetchEvents(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else {
+              if (snapshot.hasError) {
+                print(snapshot.error.toString());
+                return const Center(
+                  child: Text("Some Error Occurred"),
+                );
+              } else {
+                return Consumer<EventProvider>(
+                  builder: (_, eventData, child) {
+                    return SfCalendar(
+                      view: CalendarView.month,
+                      dataSource: EventsDataSource(eventData.events),
+                      initialSelectedDate: DateTime.now(),
+                      todayHighlightColor: Colors.amber,
+                      onTap: (calendarTapDetails) {
+                        Navigator.of(context).pushNamed(
+                            CalendarDayView.pageName,
+                            arguments: calendarTapDetails.date);
+                      },
+                    );
+                  },
+                );
+              }
+            }
+          }),
     );
   }
 }
